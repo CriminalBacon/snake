@@ -3,6 +3,7 @@ package com.mygdx.game;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.Queue;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 
 public class GameState {
@@ -28,8 +29,10 @@ public class GameState {
 
     }
 
-    public void update(float delta){
+    public void update(float delta, Viewport viewport){
         timer += delta;
+
+        controls.update(viewport);
 
         // limits speed of snake
         if(timer > 0.13f){
@@ -37,7 +40,7 @@ public class GameState {
             advance();
         }
 
-        controls.update();
+        controls.update(viewport);
 
     }
 
@@ -68,7 +71,16 @@ public class GameState {
 
         }
 
-        if (body.size - 1 == snakeLenght){
+        // check to for collision with body and reset length to 3
+        for (int i = 1; i < body.size; i++) {
+            if (body.get(i).getX() == body.first().getX() &&
+                    body.get(i).getY() == body.first().getY()) {
+                snakeLenght = 3;
+            }
+        }
+
+        // creates snake 'movement' by removing the last segment
+        while (body.size - 1 >= snakeLenght){
             body.removeLast();
         }
 
@@ -83,6 +95,12 @@ public class GameState {
         // game board
         shapeRenderer.setColor(1, 1, 1, 1);
         shapeRenderer.rect(0, yOffset, width, height);
+
+        // buttons
+        shapeRenderer.rect(235, 265, 130, 135);
+        shapeRenderer.rect(235, 0, 130, 135);
+        shapeRenderer.rect(105,135,130,130);
+        shapeRenderer.rect(365,135,130,130);
 
         // game board boarder
         shapeRenderer.setColor(0, 0,0 , 1);
