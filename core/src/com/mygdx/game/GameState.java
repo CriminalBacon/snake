@@ -10,28 +10,30 @@ public class GameState {
     private int boardSize = 30;
     private ShapeRenderer shapeRenderer = new ShapeRenderer();
     private int yOffset = 400;
-    private Queue<Bodypart> mBody = new Queue<>();
-    private float mTimer = 0;
+    private Queue<Bodypart> body = new Queue<>();
+    private float timer = 0;
     private Controls controls = new Controls();
+    private Food food = new Food(boardSize);
+    private int snakeLenght = 3;
     
 
     public GameState(){
         //head
-        mBody.addLast(new Bodypart(15, 15, boardSize));
+        body.addLast(new Bodypart(15, 15, boardSize));
 
-        mBody.addLast(new Bodypart(15, 14, boardSize));
+        body.addLast(new Bodypart(15, 14, boardSize));
 
         //tail
-        mBody.addLast(new Bodypart(15, 13, boardSize));
+        body.addLast(new Bodypart(15, 13, boardSize));
 
     }
 
     public void update(float delta){
-        mTimer += delta;
+        timer += delta;
 
         // limits speed of snake
-        if(mTimer > 0.13f){
-            mTimer = 0;
+        if(timer > 0.13f){
+            timer = 0;
             advance();
         }
 
@@ -40,26 +42,35 @@ public class GameState {
     }
 
     private void advance() {
-        int headX = mBody.first().getX();
-        int headY = mBody.first().getY();
+        int headX = body.first().getX();
+        int headY = body.first().getY();
 
         switch (controls.getDirection()){
             case 0: //UP
-                mBody.addFirst(new Bodypart(headX, headY + 1, boardSize));
+                body.addFirst(new Bodypart(headX, headY + 1, boardSize));
                 break;
             case 1: //RIGHT
-                mBody.addFirst(new Bodypart(headX + 1, headY, boardSize));
+                body.addFirst(new Bodypart(headX + 1, headY, boardSize));
                 break;
             case 2: //DOWN
-                mBody.addFirst(new Bodypart(headX, headY - 1, boardSize));
+                body.addFirst(new Bodypart(headX, headY - 1, boardSize));
                 break;
             case 3: //LEFT
-                mBody.addFirst(new Bodypart(headX - 1, headY, boardSize));
+                body.addFirst(new Bodypart(headX - 1, headY, boardSize));
                 break;
 
         }
 
-        mBody.removeLast();
+        // if snake eats food, grow length and create another food
+        if (body.first().getX() == food.getX() && body.first().getY() == food.getY()){
+            snakeLenght++;
+            food.randomizePos(boardSize);
+
+        }
+
+        if (body.size - 1 == snakeLenght){
+            body.removeLast();
+        }
 
     }
 
@@ -80,9 +91,13 @@ public class GameState {
         // snake
         float scaleSnake = width/boardSize;
         shapeRenderer.setColor(1, 0,0 , 1);
-        for (Bodypart bp : mBody){
+        for (Bodypart bp : body){
             shapeRenderer.rect(bp.getX()*scaleSnake, bp.getY()*scaleSnake + yOffset, scaleSnake, scaleSnake);
         }
+
+        // food
+        shapeRenderer.setColor(0, 1,0 , 1);
+        shapeRenderer.rect(food.getX() * scaleSnake, food.getY() * scaleSnake + yOffset, scaleSnake, scaleSnake);
 
 
         shapeRenderer.end();
